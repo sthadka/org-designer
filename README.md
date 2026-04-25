@@ -16,7 +16,7 @@ Org Designer loads a snapshot of your organization from LDAP and lets you experi
 
 ```bash
 # 1. Install dependencies
-make install          # npm install
+make deps
 
 # 2. Fetch org data from LDAP (requires VPN + ldap-utils)
 make fetch-users
@@ -212,6 +212,7 @@ Run `make test-coverage` to generate an HTML coverage report in `coverage/`.
 
 | Target                | Description                                                   |
 | --------------------- | ------------------------------------------------------------- |
+| `make deps`           | Install Node dependencies (`npm install`)                     |
 | `make dev`            | Start dev server (Vite + API) — requires `data/baseline.json` |
 | `make fetch-users`    | Re-fetch LDAP data → `data/all_users.json` (VPN required)     |
 | `make import`         | Rebuild `data/baseline.json` from `all_users.json` + org YAML |

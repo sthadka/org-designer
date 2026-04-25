@@ -1,4 +1,4 @@
-.PHONY: help install dev import fetch-users build clean clean-baseline check lint lint-fix format format-check test test-watch test-coverage ci
+.PHONY: help deps dev import fetch-users build clean clean-baseline check lint lint-fix format format-check test test-watch test-coverage ci
 
 LDAP_ATTRS := cn rhatJobRole rhatJobTitle manager uid title \
 	rhatPreferredLastName displayName rhatLocation rhatOfficeLocation \
@@ -9,7 +9,7 @@ LDAP_ATTRS := cn rhatJobRole rhatJobTitle manager uid title \
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*##' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*##"}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
 
-install: ## Install Node dependencies
+deps: ## Install Node dependencies (npm install)
 	npm install
 
 dev: data/baseline.json ## Start the dev server (Vite + API)
