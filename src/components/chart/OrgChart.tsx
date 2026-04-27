@@ -190,7 +190,8 @@ function OrgChartInner() {
   const findClosestDropTarget = useCallback(
     (draggedId: string, draggedPos: { x: number; y: number }, allNodes: Node[]): string | null => {
       if (!effectiveState) return null
-      const { w: nw, h: nh } = getNodeDims(config)
+      const hasAnyTeam = Object.values(effectiveState.people).some((p) => !!p.teamId)
+      const { w: nw, h: nh } = getNodeDims(config, hasAnyTeam)
       // Require actual bounding-box overlap; pick the candidate with the largest overlap area
       let bestId: string | null = null
       let bestOverlap = 0
@@ -417,7 +418,7 @@ function OrgChartInner() {
         <MiniMap
           nodeColor={(node) => {
             if (node.type === 'scope') return '#cbd5e1'
-            const data = node.data as { rhatJobRole?: string; isManager?: boolean }
+            const data = node.data as { jobRole?: string; isManager?: boolean }
             return data.isManager ? '#1e40af' : '#64748b'
           }}
           style={{ background: '#f8fafc' }}

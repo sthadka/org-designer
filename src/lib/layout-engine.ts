@@ -27,7 +27,10 @@ const DENSITY_RANKSEP: Record<CardDensity, number> = {
 // Each optional field row is text-xs (16px line-height) + mt-0.5 (2px) = 18px
 const FIELD_ROW_HEIGHT = 18
 
-export function computeNodeHeight(cardFields?: ConfigState['cardFields']): number {
+export function computeNodeHeight(
+  cardFields?: ConfigState['cardFields'],
+  hasAnyTeam = true,
+): number {
   if (!cardFields) return NODE_HEIGHT
   const fieldCount = [
     cardFields.title,
@@ -35,14 +38,14 @@ export function computeNodeHeight(cardFields?: ConfigState['cardFields']): numbe
     cardFields.city,
     cardFields.hireDate,
     cardFields.tenure,
-    cardFields.team,
+    cardFields.team && hasAnyTeam,
     cardFields.reportCounts,
   ].filter(Boolean).length
   return NODE_HEIGHT_BASE + fieldCount * FIELD_ROW_HEIGHT
 }
 
-export function getNodeDims(config?: ConfigState) {
-  return { w: NODE_WIDTH, h: computeNodeHeight(config?.cardFields) }
+export function getNodeDims(config?: ConfigState, hasAnyTeam = true) {
+  return { w: NODE_WIDTH, h: computeNodeHeight(config?.cardFields, hasAnyTeam) }
 }
 
 export interface OrgTreeNode {
@@ -62,7 +65,8 @@ export function computeLayout(
   const density = config?.density ?? 'default'
   const direction = config?.direction ?? 'TB'
   const cardFields = config?.cardFields
-  const nodeHeight = computeNodeHeight(cardFields)
+  const hasAnyTeam = Object.values(state.people).some((p) => !!p.teamId)
+  const nodeHeight = computeNodeHeight(cardFields, hasAnyTeam)
 
   const gap = DENSITY_GAP[density]
   const rankGap = DENSITY_RANKSEP[density]
