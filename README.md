@@ -12,12 +12,12 @@ Org Designer loads a snapshot of your organization from LDAP and lets you experi
 
 ## Quickstart
 
-**Prerequisites:** Node 20+, Python 3.10+, LDAP access (for data refresh only)
+**Prerequisites:** Node 20+, `ldap-utils` + `uv` (for data refresh only)
 
 ```bash
 make deps          # install Node dependencies
-make fetch-users   # pull org data from LDAP (VPN required)
-make dev           # start Vite (port 5173) + API server (port 3001)
+make fetch-users   # pull org data from LDAP → data/all_users.json
+make dev           # import all_users.json → baseline.json, then start Vite + API
 ```
 
 Open http://localhost:5173.
