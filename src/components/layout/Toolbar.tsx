@@ -34,7 +34,9 @@ export function Toolbar() {
   const undoStack = useAppStore((s) => s.undoStack)
   const redoStack = useAppStore((s) => s.redoStack)
   const currentScenarioName = useAppStore((s) => s.currentScenarioName)
-  const saveScenario = useAppStore((s) => s.saveScenario)
+  const overlay = useAppStore((s) => s.overlay)
+  const baseline = useAppStore((s) => s.baseline)
+  const setScenarioName = useAppStore((s) => s.setScenarioName)
   const loadScenario = useAppStore((s) => s.loadScenario)
   const loadScenarioFromJson = useAppStore((s) => s.loadScenarioFromJson)
   const listScenarios = useAppStore((s) => s.listScenarios)
@@ -73,7 +75,7 @@ export function Toolbar() {
   const commitName = () => {
     const trimmed = draftName.trim()
     if (trimmed && trimmed !== currentScenarioName) {
-      void saveScenario(trimmed)
+      setScenarioName(trimmed)
     }
     setEditingName(false)
   }
@@ -103,7 +105,13 @@ export function Toolbar() {
   }, [scenarioMenuOpen])
 
   const handleSave = () => {
-    void saveScenario(currentScenarioName)
+    const payload = {
+      name: currentScenarioName,
+      baselineImportedAt: baseline?.importedAt ?? '',
+      overlay,
+    }
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
+    download(URL.createObjectURL(blob), `org-${currentScenarioName}.json`)
     setScenarioMenuOpen(false)
   }
 
