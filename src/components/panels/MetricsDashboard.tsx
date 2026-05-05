@@ -26,7 +26,6 @@ function StatCard({ label, value, sub, pending }: StatCardProps) {
 export function MetricsDashboard() {
   const effectiveState = useAppStore((s) => s.effectiveState)
   const selectedNodeId = useAppStore((s) => s.ui.selectedNodeId)
-  const setSelected = useAppStore((s) => s.setSelected)
 
   // Resolve scope root immediately (drives header + label without delay)
   const scopeRootUid = useMemo(() => {
@@ -67,7 +66,37 @@ export function MetricsDashboard() {
     const byTitle = countBy(people, (p) => p.jobTitle || 'Unknown')
     const byTeam = countBy(people, (p) => p.teamId ?? '')
 
-    return { total, managers, ics, ratio, avgSpan, byGeo, byCountry, byRole, byTitle, byTeam }
+    // BFS to find the longest path (levels below) from the scope root
+    let maxDepth = 0
+    if (childrenMap) {
+      const root =
+        deferredScopeRootUid ??
+        Object.values(effectiveState.people).find((p) => p.managerUid === null)?.uid
+      if (root) {
+        const queue: [string, number][] = [[root, 0]]
+        while (queue.length > 0) {
+          const [uid, depth] = queue.shift()!
+          if (depth > maxDepth) maxDepth = depth
+          for (const childUid of childrenMap.get(uid) ?? []) {
+            queue.push([childUid, depth + 1])
+          }
+        }
+      }
+    }
+
+    return {
+      total,
+      managers,
+      ics,
+      ratio,
+      avgSpan,
+      maxDepth,
+      byGeo,
+      byCountry,
+      byRole,
+      byTitle,
+      byTeam,
+    }
   }, [effectiveState, childrenMap, deferredScopeRootUid])
 
   if (!metrics) return <div className="p-4 text-sm text-gray-400">No data loaded</div>
@@ -101,14 +130,6 @@ export function MetricsDashboard() {
             </svg>
           )}
         </div>
-        {scopeRootUid && (
-          <button
-            className="ml-2 flex-shrink-0 text-xs text-blue-500 hover:underline"
-            onClick={() => setSelected(null)}
-          >
-            Show all
-          </button>
-        )}
       </div>
 
       <div
@@ -136,6 +157,12 @@ export function MetricsDashboard() {
             label="Avg Span"
             value={metrics.avgSpan}
             sub="ICs per manager"
+            pending={isPending}
+          />
+          <StatCard
+            label="Org Depth"
+            value={metrics.maxDepth}
+            sub="levels below"
             pending={isPending}
           />
         </div>

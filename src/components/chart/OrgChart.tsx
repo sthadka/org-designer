@@ -97,9 +97,20 @@ function OrgChartInner() {
       const { w, h } = getNodeDims(config, hasAnyTeam)
       const cx = current.position.x + w / 2
       const cy = current.position.y + h / 2
+
+      // Left/right stays within the same sibling group (same managerUid)
+      const selectedManagerUid = effectiveState?.people[currentId]?.managerUid ?? null
+      const candidates =
+        direction === 'left' || direction === 'right'
+          ? all.filter(
+              (n) =>
+                n.id !== currentId &&
+                (effectiveState?.people[n.id]?.managerUid ?? null) === selectedManagerUid,
+            )
+          : all.filter((n) => n.id !== currentId)
+
       let best: { id: string; score: number } | null = null
-      for (const node of all) {
-        if (node.id === currentId) continue
+      for (const node of candidates) {
         const nx = node.position.x + w / 2
         const ny = node.position.y + h / 2
         let primaryDelta: number
