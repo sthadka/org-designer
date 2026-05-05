@@ -6,6 +6,52 @@ import type { EffectiveState } from '@/types/org'
 import { emptyOverlay } from '@/types/overlay'
 import { applyOverlay } from '@/lib/overlay-engine'
 
+function findOverlayLca(
+  overlay: Overlay,
+  people: Record<string, { managerUid: string | null }>,
+): string | null {
+  const touched = new Set<string>()
+  for (const action of overlay.actions) {
+    if (action.type === 'move') {
+      touched.add(action.uid)
+      if (action.fromManagerUid) touched.add(action.fromManagerUid)
+      if (action.toManagerUid) touched.add(action.toManagerUid)
+    } else if (action.type === 'edit_person' || action.type === 'delete_person') {
+      touched.add(action.uid)
+      if (action.type === 'delete_person' && action.reassignTo) touched.add(action.reassignTo)
+    } else if (action.type === 'add_person') {
+      if (action.person.managerUid) touched.add(action.person.managerUid)
+    }
+  }
+
+  const baselineUids = [...touched].filter((uid) => uid in people)
+  if (baselineUids.length === 0) return null
+
+  const getChain = (uid: string): string[] => {
+    const chain: string[] = []
+    let cur: string | null = uid
+    while (cur) {
+      chain.unshift(cur)
+      cur = people[cur]?.managerUid ?? null
+    }
+    return chain
+  }
+
+  const chains = baselineUids.map(getChain)
+  const shortest = chains.reduce((a, b) => (a.length < b.length ? a : b))
+
+  let lca: string | null = null
+  for (let i = 0; i < shortest.length; i++) {
+    const candidate = shortest[i]
+    if (chains.every((c) => c[i] === candidate)) {
+      lca = candidate
+    } else {
+      break
+    }
+  }
+  return lca
+}
+
 export interface FilterState {
   geos: string[]
   countries: string[]
@@ -183,6 +229,7 @@ export const useAppStore = create<AppState>()(
       const overlay: Overlay = scenario.overlay ?? emptyOverlay()
       const { baseline } = get()
       const effectiveState = baseline ? computeEffective(baseline, overlay) : null
+      const lcaUid = baseline ? findOverlayLca(overlay, baseline.people) : null
       set({
         overlay,
         effectiveState,
@@ -190,6 +237,7 @@ export const useAppStore = create<AppState>()(
         undoStack: [],
         redoStack: [],
       })
+      if (lcaUid) get().navigateToNode(lcaUid)
     },
 
     setScenarioName: (name: string) => {
