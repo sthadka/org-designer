@@ -3,6 +3,7 @@ import { useAppStore } from '@/store'
 import { ROLE_LABELS } from '@/lib/role-colors'
 import { teamColor } from '@/lib/team-colors'
 import { buildChildrenMap, getSubtreePeople } from '@/lib/hierarchy-utils'
+import { roleAbbreviation } from '@/lib/role-abbreviation'
 
 interface StatCardProps {
   label: string
@@ -194,8 +195,14 @@ export function MetricsDashboard() {
         </Section>
 
         <Section title="By Title">
-          {capEntries(metrics.byTitle).map(([label, count]) => (
-            <Bar key={label} label={label} count={count} total={metrics.total} />
+          {capEntries(metrics.byTitle).map(([title, count]) => (
+            <Bar
+              key={title}
+              label={title === 'Other' ? 'Other' : roleAbbreviation(title)}
+              fullLabel={title}
+              count={count}
+              total={metrics.total}
+            />
           ))}
         </Section>
 
@@ -236,11 +243,13 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 function Bar({
   label,
+  fullLabel,
   count,
   total,
   color,
 }: {
   label: string
+  fullLabel?: string
   count: number
   total: number
   color?: string
@@ -248,7 +257,7 @@ function Bar({
   const pct = total > 0 ? (count / total) * 100 : 0
   return (
     <div className="flex items-center gap-2 text-xs">
-      <div className="min-w-0 flex-1 truncate text-gray-600" title={label}>
+      <div className="min-w-0 flex-1 truncate text-gray-600" title={fullLabel ?? label}>
         {label}
       </div>
       <div className="h-1.5 w-20 flex-shrink-0 rounded-full bg-gray-100">
