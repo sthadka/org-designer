@@ -1,6 +1,7 @@
 node_modules/
 dist/
 dist-ssr/
+coverage/
 *.local
 
 # Data files containing PII — never commit
