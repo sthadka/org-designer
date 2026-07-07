@@ -64,6 +64,7 @@ export interface FilterState {
 
 export interface CardFieldToggles {
   title: boolean
+  jobRole: boolean
   location: boolean
   city: boolean
   hireDate: boolean
@@ -81,7 +82,8 @@ export type SortLayerBy =
   | 'jobTitle'
   | 'geo'
   | 'country'
-  | 'managerStatus'
+  | 'directReports'
+  | 'totalReports'
 
 export interface ConfigState {
   cardFields: CardFieldToggles
@@ -182,6 +184,7 @@ const defaultUI: UIState = {
 const defaultConfig: ConfigState = {
   cardFields: {
     title: true,
+    jobRole: false,
     location: true,
     city: false,
     hireDate: false,

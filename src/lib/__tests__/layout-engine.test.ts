@@ -19,6 +19,7 @@ import type { CardFieldToggles } from '@/store'
 
 const allOff: CardFieldToggles = {
   title: false,
+  jobRole: false,
   location: false,
   city: false,
   hireDate: false,
@@ -29,6 +30,7 @@ const allOff: CardFieldToggles = {
 
 const allOn: CardFieldToggles = {
   title: true,
+  jobRole: true,
   location: true,
   city: true,
   hireDate: true,
@@ -57,8 +59,8 @@ describe('computeNodeHeight', () => {
     expect(computeNodeHeight(threeFields)).toBe(NODE_HEIGHT_BASE + 3 * FIELD_ROW_HEIGHT)
   })
 
-  it('returns max height when all 7 fields are on', () => {
-    expect(computeNodeHeight(allOn)).toBe(NODE_HEIGHT_BASE + 7 * FIELD_ROW_HEIGHT)
+  it('returns max height when all 8 fields are on', () => {
+    expect(computeNodeHeight(allOn)).toBe(NODE_HEIGHT_BASE + 8 * FIELD_ROW_HEIGHT)
   })
 
   it('returns default height when cardFields is undefined', () => {

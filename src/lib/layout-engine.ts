@@ -34,6 +34,7 @@ export function computeNodeHeight(
   if (!cardFields) return NODE_HEIGHT
   const fieldCount = [
     cardFields.title,
+    cardFields.jobRole,
     cardFields.location,
     cardFields.city,
     cardFields.hireDate,
@@ -206,10 +207,13 @@ export function computeLayout(
     }
 
     function comparePeople(a: string, b: string): number {
-      if (sortBy === 'managerStatus') {
+      if (sortBy === 'directReports') {
         const aIsManager = (state.people[a]?.directReports ?? 0) > 0 ? 0 : 1
         const bIsManager = (state.people[b]?.directReports ?? 0) > 0 ? 0 : 1
         return aIsManager - bIsManager
+      }
+      if (sortBy === 'totalReports') {
+        return (state.people[b]?.totalReports ?? 0) - (state.people[a]?.totalReports ?? 0)
       }
       const field = SORT_FIELD[sortBy]
       const va = String(state.people[a]?.[field] ?? '')

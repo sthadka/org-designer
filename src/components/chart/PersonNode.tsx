@@ -74,6 +74,7 @@ export const PersonNode = memo(({ id, data }: PersonNodeProps) => {
 
   const fields = data.cardFields ?? {
     title: true,
+    jobRole: false,
     location: true,
     city: false,
     hireDate: false,
@@ -187,6 +188,13 @@ export const PersonNode = memo(({ id, data }: PersonNodeProps) => {
           {fields.title && (
             <div className="mt-0.5 truncate text-xs text-gray-500" title={data.jobTitle}>
               {data.jobTitle || '—'}
+            </div>
+          )}
+
+          {/* Job role */}
+          {fields.jobRole && (
+            <div className="mt-0.5 truncate text-xs text-gray-400" title={data.jobRole}>
+              {data.jobRole || '—'}
             </div>
           )}
 

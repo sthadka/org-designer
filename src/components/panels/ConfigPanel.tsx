@@ -77,6 +77,11 @@ export function ConfigPanel() {
         onChange={(v) => setCardFields({ title: v })}
       />
       <Toggle
+        label="Job Role"
+        checked={config.cardFields.jobRole}
+        onChange={(v) => setCardFields({ jobRole: v })}
+      />
+      <Toggle
         label="Location (Geo · Country)"
         checked={config.cardFields.location}
         onChange={(v) => setCardFields({ location: v })}
@@ -121,33 +126,31 @@ export function ConfigPanel() {
       />
 
       <SectionHeader label="Layout" />
-      <div className="flex items-center justify-between py-1.5">
-        <span className="text-sm text-gray-700">Direction</span>
-        <SegmentControl<LayoutDirection>
-          value={config.direction}
-          options={[
-            { value: 'TB', label: 'Vertical' },
-            { value: 'LR', label: 'Horizontal' },
-          ]}
-          onChange={(direction) => setConfig({ direction })}
-        />
+      <SegmentControl<LayoutDirection>
+        value={config.direction}
+        options={[
+          { value: 'TB', label: 'Vertical' },
+          { value: 'LR', label: 'Horizontal' },
+        ]}
+        onChange={(direction) => setConfig({ direction })}
+      />
+      <div className="mt-3 mb-1 text-xs font-semibold tracking-wide text-gray-400 uppercase">
+        Sort
       </div>
-      <div className="flex items-center justify-between py-1.5">
-        <span className="text-sm text-gray-700">Sort</span>
-        <select
-          value={config.sortLayerBy}
-          onChange={(e) => setConfig({ sortLayerBy: e.target.value as SortLayerBy })}
-          className="rounded border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600"
-        >
-          <option value="none">None</option>
-          <option value="name">Name</option>
-          <option value="jobRole">Job Role</option>
-          <option value="jobTitle">Job Title</option>
-          <option value="geo">Geo</option>
-          <option value="country">Country</option>
-          <option value="managerStatus">Manager Status</option>
-        </select>
-      </div>
+      <select
+        value={config.sortLayerBy}
+        onChange={(e) => setConfig({ sortLayerBy: e.target.value as SortLayerBy })}
+        className="w-full rounded border border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-600"
+      >
+        <option value="none">Default</option>
+        <option value="name">Name</option>
+        <option value="jobRole">Job Role</option>
+        <option value="jobTitle">Job Title</option>
+        <option value="geo">Geo</option>
+        <option value="country">Country</option>
+        <option value="directReports">Direct Reports</option>
+        <option value="totalReports">Total Reports</option>
+      </select>
 
       <SectionHeader label="Grid" />
       <Toggle
