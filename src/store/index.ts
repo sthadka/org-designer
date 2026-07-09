@@ -74,12 +74,21 @@ export interface CardFieldToggles {
 
 export type CardDensity = 'compact' | 'default' | 'comfortable'
 export type LayoutDirection = 'TB' | 'LR'
+export type SortLayerBy =
+  | 'none'
+  | 'name'
+  | 'jobRole'
+  | 'jobTitle'
+  | 'geo'
+  | 'country'
+  | 'managerStatus'
 
 export interface ConfigState {
   cardFields: CardFieldToggles
   density: CardDensity
   direction: LayoutDirection
   snapToGrid: boolean
+  sortLayerBy: SortLayerBy
 }
 
 export interface UIState {
@@ -183,6 +192,7 @@ const defaultConfig: ConfigState = {
   density: 'default',
   direction: 'TB',
   snapToGrid: true,
+  sortLayerBy: 'none',
 }
 
 function computeEffective(baseline: BaselineData, overlay: Overlay): EffectiveState {

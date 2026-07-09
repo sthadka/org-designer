@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
+  computeLayout,
   computeNodeHeight,
   getNodeDims,
   getVisiblePersonIds,
@@ -9,6 +10,9 @@ import {
 import { applyOverlay } from '@/lib/overlay-engine'
 import { makeBaseline } from '@/test/fixtures'
 import { emptyOverlay } from '@/types/overlay'
+import type { EffectiveState } from '@/types/org'
+import type { PersonRecord } from '@/types/person'
+import type { ConfigState } from '@/store'
 
 const FIELD_ROW_HEIGHT = 18 // text-xs (16px) + mt-0.5 (2px)
 import type { CardFieldToggles } from '@/store'
@@ -69,7 +73,13 @@ describe('getNodeDims', () => {
   it('always returns NODE_WIDTH', () => {
     expect(getNodeDims().w).toBe(NODE_WIDTH)
     expect(
-      getNodeDims({ cardFields: allOn, density: 'compact', direction: 'TB', snapToGrid: true }).w,
+      getNodeDims({
+        cardFields: allOn,
+        density: 'compact',
+        direction: 'TB',
+        snapToGrid: true,
+        sortLayerBy: 'none' as const,
+      }).w,
     ).toBe(NODE_WIDTH)
   })
 
@@ -79,6 +89,7 @@ describe('getNodeDims', () => {
       density: 'compact' as const,
       direction: 'TB' as const,
       snapToGrid: true,
+      sortLayerBy: 'none' as const,
     }
     expect(getNodeDims(config).h).toBe(computeNodeHeight(allOn))
   })
@@ -106,5 +117,85 @@ describe('getVisiblePersonIds', () => {
     const visible = getVisiblePersonIds(state, new Set(['ceo']), 'ceo')
     expect([...visible].sort()).toEqual(['ceo', 'vp1', 'vp2'].sort())
     expect(visible.has('mgr1')).toBe(false)
+  })
+})
+
+function makePerson(overrides: Partial<PersonRecord> & { uid: string; cn: string }): PersonRecord {
+  return {
+    displayName: overrides.cn,
+    preferredLastName: '',
+    jobTitle: '',
+    jobRole: '',
+    geo: '',
+    co: '',
+    l: '',
+    location: '',
+    hireDate: '',
+    workerId: '',
+    costCenter: '',
+    costCenterDesc: '',
+    managerUid: null,
+    directReports: 0,
+    totalReports: 0,
+    teamId: null,
+    yamlRoles: [],
+    ...overrides,
+  }
+}
+
+describe('computeLayout sortLayerBy', () => {
+  const boss = makePerson({ uid: 'boss', cn: 'Boss', directReports: 3 })
+  const childC = makePerson({ uid: 'c', cn: 'Charlie', managerUid: 'boss' })
+  const childA = makePerson({ uid: 'a', cn: 'Alice', managerUid: 'boss' })
+  const childB = makePerson({ uid: 'b', cn: 'Bob', managerUid: 'boss' })
+
+  const state: EffectiveState = {
+    people: { boss, c: childC, a: childA, b: childB },
+    teams: {},
+    hierarchy: { boss: null, c: 'boss', a: 'boss', b: 'boss' },
+    scopeNodes: {},
+    scopeAssignments: {},
+  }
+
+  const expanded = new Set(['boss'])
+
+  const baseConfig: ConfigState = {
+    cardFields: allOff,
+    density: 'default',
+    direction: 'TB',
+    snapToGrid: false,
+    sortLayerBy: 'none',
+  }
+
+  it('sorts siblings by name when sortLayerBy is "name"', () => {
+    const config: ConfigState = { ...baseConfig, sortLayerBy: 'name' }
+    const { nodes } = computeLayout(state, expanded, 'boss', config)
+
+    const children = nodes
+      .filter((n) => n.id !== 'boss')
+      .sort((a, b) => a.position.x - b.position.x)
+
+    expect(children.map((n) => n.id)).toEqual(['a', 'b', 'c'])
+  })
+
+  it('preserves dagre order when sortLayerBy is "none"', () => {
+    const sortedResult = computeLayout(state, expanded, 'boss', {
+      ...baseConfig,
+      sortLayerBy: 'name',
+    })
+    const defaultResult = computeLayout(state, expanded, 'boss', baseConfig)
+
+    const sortedOrder = sortedResult.nodes
+      .filter((n) => n.id !== 'boss')
+      .sort((a, b) => a.position.x - b.position.x)
+      .map((n) => n.id)
+
+    const defaultOrder = defaultResult.nodes
+      .filter((n) => n.id !== 'boss')
+      .sort((a, b) => a.position.x - b.position.x)
+      .map((n) => n.id)
+
+    expect(sortedOrder).toEqual(['a', 'b', 'c'])
+    expect(defaultOrder).not.toEqual(sortedOrder)
   })
 })
