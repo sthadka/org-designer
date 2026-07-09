@@ -1,5 +1,6 @@
 .PHONY: help deps dev import fetch-users build clean clean-baseline check lint lint-fix format format-check test test-watch test-coverage ci
 
+LDAPSEARCH ?= $(shell which ldapsearch)
 LDAP_HOST  ?= ldaps://ldap.example.com
 LDAP_BASE  ?= dc=example,dc=com
 
@@ -28,7 +29,7 @@ data/baseline.json: data/all_users.json
 data/all_users.json: ## Fetch from LDAP and enrich (requires LDAP access + ldap-utils)
 	@mkdir -p data
 	@echo "Fetching from LDAP..."
-	ldapsearch -H $(LDAP_HOST) -b $(LDAP_BASE) -Y GSSAPI employeeType=Employee $(LDAP_ATTRS) > data/all_users_ldif
+	$(LDAPSEARCH) -H $(LDAP_HOST) -b $(LDAP_BASE) -Y GSSAPI employeeType=Employee $(LDAP_ATTRS) > data/all_users_ldif
 	@echo "Converting LDIF to JSON..."
 	uvx --with geonamescache python scripts/ldif_to_json.py data/all_users_ldif > data/all_users_temp.json
 	@echo "Enriching with geocoding + report counts..."
